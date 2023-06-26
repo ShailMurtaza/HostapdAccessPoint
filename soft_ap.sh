@@ -1,9 +1,12 @@
 #!/usr/bin/bash
 
-i1=wlan0
-i2=wlan1mon
-# Setup the interface
+interface=($(iwconfig 2>&1 | grep "IEEE" | awk '{print $1;}'))
 
+i1=enp0s3
+i2=$interface
+echo "Using $i2 as wireless interface"
+
+# Setup the interface
 ip link set $i2 down
 ip addr flush dev $i2
 ip link set $i2 up
