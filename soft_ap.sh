@@ -1,9 +1,12 @@
 #!/usr/bin/bash
 
-i1=wlan0
-i2=wlan1mon
-# Setup the interface
+interface=($(iwconfig 2>&1 | grep "IEEE" | awk '{print $1;}'))
 
+i1=enp0s3
+i2=$interface
+echo "Using $i2 as wireless interface"
+
+# Setup the interface
 ip link set $i2 down
 ip addr flush dev $i2
 ip link set $i2 up
@@ -16,7 +19,9 @@ iptables -A FORWARD -i $i1 -o $i2 -j ACCEPT
 # sysctl -w net.ipv4.ip_forward=1
 echo 1 > /proc/sys/net/ipv4/ip_forward
 
-# start hostapd
-xterm -e "sudo killall dnsmasq ; dnsmasq -C dnsmasq.conf -d ; echo 'Stopped ...' ; read" & disown
-xterm -e "sudo hostapd hostapd.conf ; echo 'Stopped ...' ; read" & disown
+# start dnsmasq & hostapd
+
+tmux split-window -v "sudo killall dnsmasq ; dnsmasq -C dnsmasq.conf -d ; echo 'Stopped ...'"
+tmux split-window -h "sudo hostapd hostapd.conf ; echo 'Stopped ...'"
+tmux select-pane -t 0
 
