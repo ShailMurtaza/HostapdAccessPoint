@@ -2,6 +2,8 @@
 
 source ./get_interface.sh
 source ./get_wireless_interface.sh
+sed -i "s/^interface=.*$/interface=$i2/" "dnsmasq.conf"
+sed -i "s/^interface=.*$/interface=$i2/" "hostapd.conf"
 exit
 
 # Setup the interface
