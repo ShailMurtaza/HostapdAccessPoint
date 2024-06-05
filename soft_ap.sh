@@ -1,10 +1,8 @@
 #!/usr/bin/bash
 
-interface=($(iwconfig 2>&1 | grep "IEEE" | awk '{print $1;}'))
-
-i1=enp0s3
-i2=$interface
-echo "Using $i2 as wireless interface"
+source ./get_interface.sh
+source ./get_wireless_interface.sh
+exit
 
 # Setup the interface
 ip link set $i2 down
@@ -20,7 +18,6 @@ iptables -A FORWARD -i $i1 -o $i2 -j ACCEPT
 echo 1 > /proc/sys/net/ipv4/ip_forward
 
 # start dnsmasq & hostapd
-
 tmux split-window -v "sudo killall dnsmasq ; dnsmasq -C dnsmasq.conf -d ; echo 'Stopped ...'"
 tmux split-window -h "sudo hostapd hostapd.conf ; echo 'Stopped ...'"
 tmux select-pane -t 0
