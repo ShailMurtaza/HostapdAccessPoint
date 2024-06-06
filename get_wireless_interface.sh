@@ -15,11 +15,11 @@ done
 read -p "Wireless Interface: " choice
 
 if [[ $choice -le 0 || $choice -gt ${#interfaces[@]} ]]; then
-    echo "[-] Invalid Choice"
-    exit
+    echo "\033[31m [-] Invalid Choice \033[0m\n"
+    exit 1
 fi
 
 
 i2="${interfaces[$((choice - 1))]}"
-echo -e "\033[32m[+] SELECTED: $i2\033[0m\n"
+echo -e "\033[32m [+] SELECTED: $i2 \033[0m\n"
 
