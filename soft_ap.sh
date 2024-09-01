@@ -1,12 +1,17 @@
 #!/usr/bin/bash
 
-interface=($(iwconfig 2>&1 | grep "IEEE" | awk '{print $1;}'))
+if [[ $EUID -ne 0 ]]; then
+    echo -e "\033[31m [-] Require Root Access \033[0m" 1>&2
+    exec sudo "$0" "$@"
+fi
 
-i1=enp0s3
-i2=$interface
-echo "Using $i2 as wireless interface"
+source ./get_interface.sh
+source ./get_wireless_interface.sh
+sed -i "s/^interface=.*$/interface=$i2/" "dnsmasq.conf"
+sed -i "s/^interface=.*$/interface=$i2/" "hostapd.conf"
 
 # Setup the interface
+nmcli dev set $i2 managed no
 ip link set $i2 down
 ip addr flush dev $i2
 ip link set $i2 up
@@ -20,8 +25,9 @@ iptables -A FORWARD -i $i1 -o $i2 -j ACCEPT
 echo 1 > /proc/sys/net/ipv4/ip_forward
 
 # start dnsmasq & hostapd
-
-tmux split-window -v "sudo killall dnsmasq ; dnsmasq -C dnsmasq.conf -d ; echo 'Stopped ...'"
-tmux split-window -h "sudo hostapd hostapd.conf ; echo 'Stopped ...'"
-tmux select-pane -t 0
+tmux new-session \; \
+    split-window -v \; \
+    send-keys "sudo killall dnsmasq ; sudo dnsmasq -C dnsmasq.conf -d; echo 'Stopped ...'; read" C-m \; \
+    select-pane -t 0 \; \
+    send-keys "sudo hostapd hostapd.conf; echo 'Stopped ...'; read" C-m
 
